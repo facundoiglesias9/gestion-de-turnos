@@ -176,6 +176,11 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              {user.username === 'facundoiglesias9' && (
+                <a href="/admin" className="text-purple-400 hover:text-purple-300 font-bold text-sm mr-2 border border-purple-500/30 px-3 py-1 rounded-lg hover:bg-purple-500/10 transition-colors">
+                  ADMIN
+                </a>
+              )}
               <InstallPrompt />
               <button
                 onClick={logout}

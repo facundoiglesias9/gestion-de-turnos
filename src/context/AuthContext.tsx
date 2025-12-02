@@ -42,10 +42,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
                 const username = session.user.email?.split('@')[0] || '';
+                const businessName = session.user.user_metadata.business_name || 'Mi Negocio';
+
                 setUser({
                     id: session.user.id,
                     username: username,
-                    businessName: session.user.user_metadata.business_name || 'Mi Negocio'
+                    businessName: businessName
+                });
+
+                // Sync profile for admin visibility
+                supabase.from('profiles').upsert({
+                    id: session.user.id,
+                    email: session.user.email,
+                    business_name: businessName
+                }).then(({ error }) => {
+                    if (error) console.error('Error syncing profile:', error);
                 });
             } else {
                 setUser(null);
