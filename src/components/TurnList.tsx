@@ -34,6 +34,9 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
     const [reminderDate, setReminderDate] = useState('');
     const [reminderTime, setReminderTime] = useState('');
 
+    // In-App Notification State
+    const [activeNotification, setActiveNotification] = useState<Turn | null>(null);
+
     // Check for reminders every minute
     useEffect(() => {
         const checkReminders = () => {
@@ -57,25 +60,32 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
     }, [turns, onReminderSent]);
 
     const showNotification = (turn: Turn) => {
-        // Browser Notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-            const notif = new Notification(`Recordatorio: Turno de ${turn.clientName}`, {
-                body: `Es hora de avisarle a ${turn.clientName} sobre su turno.`,
+        // 1. Try Service Worker Notification (Best for Android)
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(`Recordatorio: ${turn.clientName}`, {
+                    body: `Es hora del turno de ${turn.clientName}. Toca para abrir WhatsApp.`,
+                    icon: '/icon.png',
+                    vibrate: [200, 100, 200],
+                    tag: 'reminder-' + turn.id,
+                    data: { url: `https://wa.me/?text=${encodeURIComponent(`Hola ${turn.clientName}, te recuerdo tu turno...`)}` }
+                });
+            });
+        }
+        // 2. Fallback to standard Notification
+        else if ('Notification' in window && Notification.permission === 'granted') {
+            const notif = new Notification(`Recordatorio: ${turn.clientName}`, {
+                body: `Es hora del turno de ${turn.clientName}.`,
                 icon: '/icon.png'
             });
-
             notif.onclick = () => {
                 window.focus();
                 openWhatsApp(turn);
             };
         }
 
-        // In-App Alert
-        // We removed the audio file to prevent errors.
-        // Using a simple alert/confirm is reliable.
-        if (confirm(`🔔 RECORDATORIO\n\nEs hora de avisarle a ${turn.clientName} sobre su turno.\n\n¿Quieres abrir WhatsApp ahora?`)) {
-            openWhatsApp(turn);
-        }
+        // 3. Always show In-App Alert (Fail-safe)
+        setActiveNotification(turn);
     };
 
     const testNotification = () => {
@@ -84,17 +94,23 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
             return;
         }
 
-        if (Notification.permission === 'granted') {
-            new Notification("Prueba de Notificación", { body: "¡Las notificaciones funcionan correctamente!" });
-        } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    new Notification("Prueba de Notificación", { body: "¡Gracias! Ahora recibirás los recordatorios." });
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification("Prueba Exitosa", {
+                            body: "Así se verán tus recordatorios.",
+                            icon: '/icon.png',
+                            vibrate: [200, 100, 200]
+                        });
+                    });
+                } else {
+                    new Notification("Prueba Exitosa", { body: "Así se verán tus recordatorios." });
                 }
-            });
-        } else {
-            alert("Las notificaciones están bloqueadas. Por favor, habilítalas en la configuración de tu navegador.");
-        }
+            } else {
+                alert("Permiso denegado. Revisa la configuración del sitio.");
+            }
+        });
     };
 
     const openWhatsApp = (turn: Turn) => {
@@ -103,6 +119,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         const message = `Hola ${turn.clientName}! Te recuerdo que tienes un turno agendado para el ${date} a las ${time} hs. Por favor confirma asistencia. Gracias!`;
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
+        setActiveNotification(null); // Close in-app notification
     };
 
     const formatPrice = (price: number) => {
@@ -165,6 +182,45 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
     return (
         <div className="w-full space-y-6">
             <h2 className="text-2xl font-bold text-white mb-6">Próximos Turnos</h2>
+
+            {/* In-App Notification Banner */}
+            {activeNotification && (
+                <div className="fixed top-4 left-4 right-4 z-[100] animate-bounce-in">
+                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-4 shadow-2xl border border-white/20 flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-white text-lg">¡Recordatorio de Turno!</h3>
+                                    <p className="text-white/90 text-sm">Es hora de avisarle a <span className="font-bold">{activeNotification.clientName}</span>.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setActiveNotification(null)}
+                                className="text-white/70 hover:text-white p-1"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => openWhatsApp(activeNotification)}
+                            className="w-full bg-white text-purple-600 font-bold py-3 rounded-xl hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.77.46 3.43 1.256 4.89L2 22l5.256-1.256A9.956 9.956 0 0012.004 22c5.524 0 10.004-4.48 10.004-10.004C22.008 6.48 17.528 2 12.004 2zm5.352 14.288c-.22.616-1.268 1.132-1.74 1.16-.472.028-1.084.14-3.792-.932-3.32-1.312-5.46-4.72-5.624-4.94-.164-.22-1.344-1.788-1.344-3.412 0-1.624.848-2.42 1.152-2.752.304-.332.66-.416.88-.416.22 0 .44.004.632.008.2.004.472-.076.74.568.28.672.944 2.304 1.024 2.472.08.168.136.364.028.58-.108.216-.164.352-.324.536-.16.184-.336.412-.48.556-.16.16-.328.336-.14.656.188.32.836 1.364 1.792 2.216 1.224 1.092 2.256 1.436 2.576 1.572.32.136.508.112.7-.108.192-.22.824-.956 1.044-1.284.22-.328.44-.276.74-.164.3.112 1.904.896 2.232 1.06.328.164.548.244.628.38.08.136.08.792-.14 1.408z" />
+                            </svg>
+                            Abrir WhatsApp
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {sortedTurns.map((turn) => (
                 <div key={turn.id} className="glass-card p-5 relative overflow-hidden transition-all hover:shadow-lg border border-slate-600">
                     {/* Decorative side bar based on status */}
