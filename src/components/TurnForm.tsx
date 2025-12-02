@@ -21,7 +21,7 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
     const [dateTime, setDateTime] = useState('');
     const [task, setTask] = useState('');
     const [estimatedPrice, setEstimatedPrice] = useState('');
-    const [services, setServices] = useState<{ name: string; price: number }[]>([]);
+    const [services, setServices] = useState<{ service_name: string; price: number }[]>([]);
     const [isCustomTask, setIsCustomTask] = useState(false);
 
     useEffect(() => {
@@ -29,9 +29,9 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
             const fetchServices = async () => {
                 const { data } = await supabase
                     .from('prices')
-                    .select('name, price')
+                    .select('service_name, price')
                     .eq('user_id', user.id)
-                    .order('name');
+                    .order('service_name');
 
                 if (data) {
                     setServices(data);
@@ -73,7 +73,7 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
         } else {
             setIsCustomTask(false);
             setTask(value);
-            const service = services.find(s => s.name === value);
+            const service = services.find(s => s.service_name === value);
             if (service) {
                 setEstimatedPrice(service.price.toString());
             }
@@ -165,8 +165,8 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
                     >
                         <option value="">Seleccionar servicio...</option>
                         {services.map((service, index) => (
-                            <option key={index} value={service.name}>
-                                {service.name}
+                            <option key={index} value={service.service_name}>
+                                {service.service_name}
                             </option>
                         ))}
                         <option value="custom" className="font-bold text-purple-400">+ Otra tarea...</option>
