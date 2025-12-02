@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 const outfit = Outfit({ subsets: ["latin"], variable: '--font-outfit' });
 
 export const metadata: Metadata = {
-  title: "tzinails - Gestión de Turnos",
+  title: "Gestión de Turnos",
   description: "Sistema de gestión de turnos para tzinails",
 };
 
