@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import PricesPage from '@/app/precios/page';
 import EarningsPage from '@/app/ganancias/page';
+import InstallPrompt from '@/components/InstallPrompt';
 
 export default function Home() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -174,15 +175,18 @@ export default function Home() {
                 Hola {user.username}
               </p>
             </div>
-            <button
-              onClick={logout}
-              className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-red-500/10"
-              title="Cerrar Sesión"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-3">
+              <InstallPrompt />
+              <button
+                onClick={logout}
+                className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-red-500/10"
+                title="Cerrar Sesión"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
