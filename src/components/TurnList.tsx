@@ -93,31 +93,6 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         setActiveNotification(turn);
     };
 
-    const testNotification = () => {
-        if (!('Notification' in window)) {
-            alert("Tu navegador no soporta notificaciones.");
-            return;
-        }
-
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.ready.then(registration => {
-                        registration.showNotification("Prueba Exitosa", {
-                            body: "Así se verán tus recordatorios.",
-                            icon: '/icon.png',
-                            vibrate: [200, 100, 200]
-                        } as any);
-                    });
-                } else {
-                    new Notification("Prueba Exitosa", { body: "Así se verán tus recordatorios." });
-                }
-            } else {
-                alert("Permiso denegado. Revisa la configuración del sitio.");
-            }
-        });
-    };
-
     const openWhatsApp = (turn: Turn) => {
         const date = new Date(turn.dateTime).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
         const time = new Date(turn.dateTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -449,12 +424,6 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                     Guardar
                                 </button>
                             </div>
-                            <button
-                                onClick={testNotification}
-                                className="w-full py-2 px-4 rounded-lg border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors text-sm"
-                            >
-                                🔔 Probar Notificación
-                            </button>
                         </div>
                     </div>
                 </div>
