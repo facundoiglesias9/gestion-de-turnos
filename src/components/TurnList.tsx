@@ -157,7 +157,14 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         // Adjust for local timezone input
         const localIso = new Date(turnDate.getTime() - (turnDate.getTimezoneOffset() * 60000)).toISOString();
         setReminderDate(localIso.split('T')[0]);
-        setReminderTime(localIso.split('T')[1].slice(0, 5));
+
+        // Round minutes to nearest 5
+        let minutes = Math.round(turnDate.getMinutes() / 5) * 5;
+        if (minutes === 60) minutes = 55; // Clamp to 55 max for simplicity in this context
+        const hours = turnDate.getHours().toString().padStart(2, '0');
+        const mins = minutes.toString().padStart(2, '0');
+
+        setReminderTime(`${hours}:${mins}`);
     };
 
     const saveReminder = () => {
@@ -251,8 +258,8 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                     <button
                                         onClick={() => openReminderModal(turn)}
                                         className={`p-2 rounded-full transition-colors ${turn.reminderTime
-                                            ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
-                                            : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
+                                                ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
+                                                : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
                                             }`}
                                         title={turn.reminderTime ? `Recordatorio: ${new Date(turn.reminderTime).toLocaleString()}` : "Crear recordatorio"}
                                     >
@@ -396,13 +403,34 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Hora</label>
-                                <input
-                                    type="time"
-                                    value={reminderTime}
-                                    onChange={(e) => setReminderTime(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                />
+                                <label className="block text-sm font-medium text-slate-300 mb-1">Hora (24hs)</label>
+                                <div className="flex gap-2">
+                                    <select
+                                        value={reminderTime.split(':')[0] || '00'}
+                                        onChange={(e) => {
+                                            const minutes = reminderTime.split(':')[1] || '00';
+                                            setReminderTime(`${e.target.value}:${minutes}`);
+                                        }}
+                                        className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none appearance-none text-center font-bold text-lg"
+                                    >
+                                        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(hour => (
+                                            <option key={hour} value={hour}>{hour}</option>
+                                        ))}
+                                    </select>
+                                    <span className="text-2xl text-slate-500">:</span>
+                                    <select
+                                        value={reminderTime.split(':')[1] || '00'}
+                                        onChange={(e) => {
+                                            const hours = reminderTime.split(':')[0] || '00';
+                                            setReminderTime(`${hours}:${e.target.value}`);
+                                        }}
+                                        className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none appearance-none text-center font-bold text-lg"
+                                    >
+                                        {Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')).map(min => (
+                                            <option key={min} value={min}>{min}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
