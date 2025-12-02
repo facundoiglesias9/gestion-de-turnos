@@ -1,6 +1,6 @@
 {
     "name": "Gestión de Turnos",
-    "short_name": "Gestión de Turnos",
+    "short_name": "Turnos",
     "description": "Aplicación para gestión de turnos y precios",
     "start_url": "/",
     "display": "standalone",
@@ -10,7 +10,7 @@
     "icons": [
         {
             "src": "/icon.png",
-            "sizes": "192x192",
+            "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
         },
