@@ -44,7 +44,9 @@ export default function Home() {
           task: turn.task,
           completed: turn.completed,
           estimatedPrice: turn.estimated_price,
-          paid: turn.paid
+          paid: turn.paid,
+          reminderTime: turn.reminder_time,
+          reminderSent: turn.reminder_sent
         })));
       }
       setLoading(false);
@@ -87,7 +89,9 @@ export default function Home() {
         dateTime: newTurn.date_time,
         task: newTurn.task,
         completed: newTurn.completed,
-        estimatedPrice: newTurn.estimated_price
+        estimatedPrice: newTurn.estimated_price,
+        reminderTime: null,
+        reminderSent: false
       }]);
     }
   };
@@ -150,6 +154,25 @@ export default function Home() {
     } else {
       setTurns(turns.map(turn =>
         turn.id === id ? { ...turn, estimatedPrice: newPrice } : turn
+      ));
+    }
+  };
+
+  const handleSetReminder = async (id: string, date: string | null) => {
+    const { error } = await supabase
+      .from('turns')
+      .update({
+        reminder_time: date,
+        reminder_sent: false // Reset sent status if reminder is updated
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating reminder:', error);
+      alert('Error al guardar el recordatorio');
+    } else {
+      setTurns(turns.map(turn =>
+        turn.id === id ? { ...turn, reminderTime: date, reminderSent: false } : turn
       ));
     }
   };
@@ -241,6 +264,7 @@ export default function Home() {
                     onStatusChange={handleStatusChange}
                     onPaidChange={handlePaidChange}
                     onUpdatePrice={handleUpdatePrice}
+                    onSetReminder={handleSetReminder}
                   />
                 )}
               </div>
