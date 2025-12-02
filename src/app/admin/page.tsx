@@ -63,6 +63,39 @@ export default function AdminPage() {
         setIsLoadingData(false);
     };
 
+    const handleDeleteUser = async (userId: string, businessName: string) => {
+        if (!confirm(`¿Estás seguro de que quieres ELIMINAR DEFINITIVAMENTE a "${businessName}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/delete-user', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    adminEmail: 'facundo@example.com' // Send admin email for verification
+                })
+            });
+
+            if (response.ok) {
+                // Remove from local state
+                setProfiles(profiles.filter(p => p.id !== userId));
+                if (selectedUser === userId) {
+                    setSelectedUser(null);
+                    setUserTurns([]);
+                }
+                alert('Usuario eliminado correctamente.');
+            } else {
+                const data = await response.json();
+                alert('Error al eliminar: ' + (data.error || 'Desconocido'));
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('Error al procesar la solicitud.');
+        }
+    };
+
     if (loading) return <div className="text-white p-10">Cargando...</div>;
 
     return (
@@ -81,17 +114,27 @@ export default function AdminPage() {
                         <h2 className="text-xl font-bold mb-4 text-white">Emprendimientos</h2>
                         <div className="space-y-2">
                             {profiles.map(profile => (
-                                <button
-                                    key={profile.id}
-                                    onClick={() => loadUserTurns(profile.id)}
-                                    className={`w-full text-left p-3 rounded-lg transition-colors ${selectedUser === profile.id
-                                        ? 'bg-purple-600 text-white'
-                                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-                                        }`}
-                                >
-                                    <div className="font-bold">{profile.business_name}</div>
-                                    <div className="text-xs opacity-70">{profile.email}</div>
-                                </button>
+                                <div key={profile.id} className="flex gap-2 group">
+                                    <button
+                                        onClick={() => loadUserTurns(profile.id)}
+                                        className={`flex-1 text-left p-3 rounded-lg transition-colors ${selectedUser === profile.id
+                                                ? 'bg-purple-600 text-white'
+                                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                                            }`}
+                                    >
+                                        <div className="font-bold">{profile.business_name}</div>
+                                        <div className="text-xs opacity-70">{profile.email}</div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteUser(profile.id, profile.business_name)}
+                                        className="p-3 bg-red-900/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                        title="Eliminar usuario"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
                             ))}
                             {profiles.length === 0 && (
                                 <p className="text-slate-500 text-sm">No hay perfiles visibles aún.</p>
