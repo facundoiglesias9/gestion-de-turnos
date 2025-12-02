@@ -45,9 +45,13 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
         e.preventDefault();
         if (!clientName || !dateTime || !estimatedPrice) return;
 
+        // Create a Date object from the local input string
+        // This interprets the input time as local time
+        const localDate = new Date(dateTime);
+
         onAddTurn({
             clientName,
-            dateTime,
+            dateTime: localDate.toISOString(), // Send as UTC ISO string
             task,
             estimatedPrice: parseFloat(estimatedPrice)
         });
