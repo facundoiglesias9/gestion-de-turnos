@@ -58,8 +58,15 @@ export default function Home() {
   const handleAddTurn = async (data: { clientName: string; dateTime: string; task: string; estimatedPrice: number }) => {
     if (!user) return;
 
-    // Check for existing turn at the same time (exact match)
-    const turnExists = turns.some(t => t.dateTime === data.dateTime && !t.completed);
+    // Check for existing turn at the same time (robust comparison)
+    const newTurnDate = new Date(data.dateTime);
+    const turnExists = turns.some(t => {
+      if (t.completed) return false;
+      const existingDate = new Date(t.dateTime);
+      // Compare timestamps (ignoring seconds/milliseconds if needed, but strict equality is safer for "same moment")
+      return existingDate.getTime() === newTurnDate.getTime();
+    });
+
     if (turnExists) {
       alert('Ya existe un turno agendado para esa fecha y hora exacta.');
       return;
