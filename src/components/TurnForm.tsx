@@ -15,14 +15,23 @@ interface TurnFormProps {
     onAddTurn: (turn: TurnData) => void;
 }
 
+interface ServiceItem {
+    name: string;
+    price: number;
+}
+
 export default function TurnForm({ onAddTurn }: TurnFormProps) {
     const { user } = useAuth();
     const [clientName, setClientName] = useState('');
     const [dateTime, setDateTime] = useState('');
-    const [task, setTask] = useState('');
-    const [estimatedPrice, setEstimatedPrice] = useState('');
+
+    // Multi-task state
+    const [selectedTasks, setSelectedTasks] = useState<ServiceItem[]>([]);
+    const [customTaskName, setCustomTaskName] = useState('');
+    const [isAddingCustom, setIsAddingCustom] = useState(false);
+
+    const [estimatedPrice, setEstimatedPrice] = useState<string>('');
     const [services, setServices] = useState<{ service_name: string; price: number }[]>([]);
-    const [isCustomTask, setIsCustomTask] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -41,42 +50,76 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
         }
     }, [user]);
 
+    // Update total price when tasks change
+    useEffect(() => {
+        const total = selectedTasks.reduce((sum, item) => sum + item.price, 0);
+        if (total > 0) {
+            setEstimatedPrice(total.toString());
+        } else if (selectedTasks.length === 0) {
+            setEstimatedPrice('');
+        }
+    }, [selectedTasks]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!clientName || !dateTime || !estimatedPrice) return;
 
         // Create a Date object from the local input string
-        // This interprets the input time as local time
         const localDate = new Date(dateTime);
+
+        // Combine task names
+        const combinedTask = selectedTasks.length > 0
+            ? selectedTasks.map(t => t.name).join(' + ')
+            : customTaskName; // Fallback if they only typed in custom input without adding
 
         onAddTurn({
             clientName,
-            dateTime: localDate.toISOString(), // Send as UTC ISO string
-            task,
+            dateTime: localDate.toISOString(),
+            task: combinedTask,
             estimatedPrice: parseFloat(estimatedPrice)
         });
 
         // Reset form
         setClientName('');
         setDateTime('');
-        setTask('');
+        setSelectedTasks([]);
+        setCustomTaskName('');
         setEstimatedPrice('');
-        setIsCustomTask(false);
+        setIsAddingCustom(false);
     };
 
-    const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleServiceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
+        if (!value) return;
+
         if (value === 'custom') {
-            setIsCustomTask(true);
-            setTask('');
-            setEstimatedPrice('');
+            setIsAddingCustom(true);
+            // Don't add yet, wait for user input
         } else {
-            setIsCustomTask(false);
-            setTask(value);
             const service = services.find(s => s.service_name === value);
             if (service) {
-                setEstimatedPrice(service.price.toString());
+                addTask({ name: service.service_name, price: service.price });
             }
+        }
+        // Reset select
+        e.target.value = "";
+    };
+
+    const addTask = (task: ServiceItem) => {
+        setSelectedTasks([...selectedTasks, task]);
+    };
+
+    const removeTask = (index: number) => {
+        const newTasks = [...selectedTasks];
+        newTasks.splice(index, 1);
+        setSelectedTasks(newTasks);
+    };
+
+    const addCustomTask = () => {
+        if (customTaskName.trim()) {
+            addTask({ name: customTaskName.trim(), price: 0 }); // Price 0 for custom, user sets total manually
+            setCustomTaskName('');
+            setIsAddingCustom(false);
         }
     };
 
@@ -155,18 +198,35 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
             </div>
 
             <div className="mb-5">
-                <label htmlFor="task" className="block text-base font-semibold text-slate-200 mb-2">Tarea (Opcional)</label>
-                {!isCustomTask ? (
+                <label className="block text-base font-semibold text-slate-200 mb-2">Tareas</label>
+
+                {/* Selected Tasks List */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedTasks.map((task, index) => (
+                        <div key={index} className="bg-purple-900/50 border border-purple-500/50 text-purple-100 px-3 py-1 rounded-full flex items-center gap-2">
+                            <span className="font-medium">{task.name}</span>
+                            <button
+                                type="button"
+                                onClick={() => removeTask(index)}
+                                className="text-purple-300 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Task Selector */}
+                {!isAddingCustom ? (
                     <select
-                        id="task-select"
-                        value={task}
-                        onChange={handleServiceChange}
+                        onChange={handleServiceSelect}
                         className="input-field text-lg font-medium"
+                        defaultValue=""
                     >
-                        <option value="">Seleccionar servicio...</option>
+                        <option value="" disabled>Agregar servicio...</option>
                         {services.map((service, index) => (
                             <option key={index} value={service.service_name}>
-                                {service.service_name}
+                                {service.service_name} (${service.price})
                             </option>
                         ))}
                         <option value="custom" className="font-bold text-purple-400">+ Otra tarea...</option>
@@ -174,19 +234,30 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
                 ) : (
                     <div className="flex gap-2">
                         <input
-                            id="task"
                             type="text"
-                            value={task}
-                            onChange={(e) => setTask(e.target.value)}
+                            value={customTaskName}
+                            onChange={(e) => setCustomTaskName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    addCustomTask();
+                                }
+                            }}
                             className="input-field text-lg font-medium"
                             placeholder="Escribir tarea..."
                             autoFocus
                         />
                         <button
                             type="button"
-                            onClick={() => setIsCustomTask(false)}
+                            onClick={addCustomTask}
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            OK
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsAddingCustom(false)}
                             className="px-4 py-2 text-slate-300 hover:text-white bg-slate-700 rounded-lg transition-colors text-lg"
-                            title="Volver a la lista"
                         >
                             ✕
                         </button>
@@ -195,7 +266,7 @@ export default function TurnForm({ onAddTurn }: TurnFormProps) {
             </div>
 
             <div className="mb-8">
-                <label htmlFor="price" className="block text-base font-semibold text-slate-200 mb-2">Precio Estimado *</label>
+                <label htmlFor="price" className="block text-base font-semibold text-slate-200 mb-2">Precio Total Estimado *</label>
                 <input
                     id="price"
                     type="number"
