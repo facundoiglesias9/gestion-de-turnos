@@ -22,9 +22,10 @@ interface TurnListProps {
     onPaidChange?: (id: string, paid: boolean) => void;
     onUpdatePrice?: (id: string, newPrice: number) => void;
     onSetReminder?: (id: string, date: string | null) => void;
+    onReminderSent?: (id: string) => void;
 }
 
-export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange, onUpdatePrice, onSetReminder }: TurnListProps) {
+export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange, onUpdatePrice, onSetReminder, onReminderSent }: TurnListProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editPrice, setEditPrice] = useState<string>('');
 
@@ -44,14 +45,16 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                     if (now >= reminderTime && now.getTime() - reminderTime.getTime() < 60000 * 5) {
                         // Trigger notification
                         showNotification(turn);
+                        // Mark as sent to prevent loop
+                        if (onReminderSent) onReminderSent(turn.id);
                     }
                 }
             });
         };
 
-        const interval = setInterval(checkReminders, 30000); // Check every 30s
+        const interval = setInterval(checkReminders, 10000); // Check every 10s
         return () => clearInterval(interval);
-    }, [turns]);
+    }, [turns, onReminderSent]);
 
     const showNotification = (turn: Turn) => {
         // Browser Notification
@@ -65,22 +68,38 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                 window.focus();
                 openWhatsApp(turn);
             };
-        } else if ('Notification' in window && Notification.permission !== 'denied') {
-            Notification.requestPermission();
         }
 
-        // In-App Alert (Audio + Visual)
-        const audio = new Audio('/notification.mp3'); // We'll need to add this sound later or use a default beep logic if possible, or just alert
-        audio.play().catch(e => console.log('Audio play failed', e));
-
+        // In-App Alert
+        // We removed the audio file to prevent errors.
+        // Using a simple alert/confirm is reliable.
         if (confirm(`🔔 RECORDATORIO\n\nEs hora de avisarle a ${turn.clientName} sobre su turno.\n\n¿Quieres abrir WhatsApp ahora?`)) {
             openWhatsApp(turn);
         }
     };
 
+    const testNotification = () => {
+        if (!('Notification' in window)) {
+            alert("Tu navegador no soporta notificaciones.");
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            new Notification("Prueba de Notificación", { body: "¡Las notificaciones funcionan correctamente!" });
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    new Notification("Prueba de Notificación", { body: "¡Gracias! Ahora recibirás los recordatorios." });
+                }
+            });
+        } else {
+            alert("Las notificaciones están bloqueadas. Por favor, habilítalas en la configuración de tu navegador.");
+        }
+    };
+
     const openWhatsApp = (turn: Turn) => {
         const date = new Date(turn.dateTime).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-        const time = new Date(turn.dateTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const time = new Date(turn.dateTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
         const message = `Hola ${turn.clientName}! Te recuerdo que tienes un turno agendado para el ${date} a las ${time} hs. Por favor confirma asistencia. Gracias!`;
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
@@ -113,8 +132,10 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         const turnDate = new Date(turn.dateTime);
         turnDate.setHours(turnDate.getHours() - 1);
 
-        setReminderDate(turnDate.toISOString().split('T')[0]);
-        setReminderTime(turnDate.toTimeString().slice(0, 5));
+        // Adjust for local timezone input
+        const localIso = new Date(turnDate.getTime() - (turnDate.getTimezoneOffset() * 60000)).toISOString();
+        setReminderDate(localIso.split('T')[0]);
+        setReminderTime(localIso.split('T')[1].slice(0, 5));
     };
 
     const saveReminder = () => {
@@ -158,7 +179,9 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                 <p className="text-base text-slate-300 font-medium">
                                     {new Date(turn.dateTime).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                     {' - '}
-                                    <span className="text-white font-bold">{new Date(turn.dateTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs</span>
+                                    <span className="text-white font-bold">
+                                        {new Date(turn.dateTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs
+                                    </span>
                                 </p>
                             </div>
                             <div className="flex gap-2">
@@ -322,18 +345,26 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setReminderModalOpen(null)}
+                                    className="flex-1 py-2 px-4 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={saveReminder}
+                                    className="flex-1 py-2 px-4 rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors font-bold"
+                                >
+                                    Guardar
+                                </button>
+                            </div>
                             <button
-                                onClick={() => setReminderModalOpen(null)}
-                                className="flex-1 py-2 px-4 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors"
+                                onClick={testNotification}
+                                className="w-full py-2 px-4 rounded-lg border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors text-sm"
                             >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={saveReminder}
-                                className="flex-1 py-2 px-4 rounded-lg bg-purple-600 text-white hover:bg-purple-500 transition-colors font-bold"
-                            >
-                                Guardar
+                                🔔 Probar Notificación
                             </button>
                         </div>
                     </div>

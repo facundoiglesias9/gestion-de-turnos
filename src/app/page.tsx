@@ -184,6 +184,22 @@ export default function Home() {
     }
   };
 
+  const handleReminderSent = async (id: string) => {
+    // Optimistic update
+    setTurns(turns.map(turn =>
+      turn.id === id ? { ...turn, reminderSent: true } : turn
+    ));
+
+    const { error } = await supabase
+      .from('turns')
+      .update({ reminder_sent: true })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error marking reminder as sent:', error);
+    }
+  };
+
   if (!mounted || authLoading) {
     return null;
   }
@@ -272,6 +288,7 @@ export default function Home() {
                     onPaidChange={handlePaidChange}
                     onUpdatePrice={handleUpdatePrice}
                     onSetReminder={handleSetReminder}
+                    onReminderSent={handleReminderSent}
                   />
                 )}
               </div>
