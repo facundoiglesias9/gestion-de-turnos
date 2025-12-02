@@ -69,7 +69,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                     vibrate: [200, 100, 200],
                     tag: 'reminder-' + turn.id,
                     data: { url: `https://wa.me/?text=${encodeURIComponent(`Hola ${turn.clientName}, te recuerdo tu turno...`)}` }
-                });
+                } as any);
             });
         }
         // 2. Fallback to standard Notification
@@ -102,7 +102,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                             body: "Así se verán tus recordatorios.",
                             icon: '/icon.png',
                             vibrate: [200, 100, 200]
-                        });
+                        } as any);
                     });
                 } else {
                     new Notification("Prueba Exitosa", { body: "Así se verán tus recordatorios." });
@@ -246,8 +246,8 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                     <button
                                         onClick={() => openReminderModal(turn)}
                                         className={`p-2 rounded-full transition-colors ${turn.reminderTime
-                                                ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
-                                                : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
+                                            ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
+                                            : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
                                             }`}
                                         title={turn.reminderTime ? `Recordatorio: ${new Date(turn.reminderTime).toLocaleString()}` : "Crear recordatorio"}
                                     >
