@@ -145,7 +145,7 @@ export default function PricesPage() {
                             <tr>
                                 <th className="px-6 py-4 text-left text-base font-bold text-slate-200">Servicio</th>
                                 <th className="px-6 py-4 text-right text-base font-bold text-slate-200">Precio</th>
-                                <th className="px-6 py-4 text-right text-base font-bold text-slate-200">Acciones</th>
+                                <th className="px-6 py-4 text-left text-base font-bold text-slate-200">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50">
@@ -155,8 +155,8 @@ export default function PricesPage() {
                                     <td className="px-6 py-4 text-right font-bold text-green-400 text-lg">
                                         {formatPrice(item.price)}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex gap-2 justify-end">
+                                    <td className="px-6 py-4">
+                                        <div className="flex gap-2 justify-start">
                                             <button
                                                 onClick={() => handleEdit(item)}
                                                 className="p-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded-lg transition-colors"
