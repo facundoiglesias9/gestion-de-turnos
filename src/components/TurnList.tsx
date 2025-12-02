@@ -37,14 +37,14 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
     // In-App Notification State
     const [activeNotification, setActiveNotification] = useState<Turn | null>(null);
 
-    // Check for reminders every minute
+    // Check for reminders every 2 seconds
     useEffect(() => {
         const checkReminders = () => {
             const now = new Date();
             turns.forEach(turn => {
                 if (turn.reminderTime && !turn.reminderSent) {
                     const reminderTime = new Date(turn.reminderTime);
-                    // Check if it's time (within the last minute)
+                    // Check if it's time (within the last 5 minutes to be safe)
                     if (now >= reminderTime && now.getTime() - reminderTime.getTime() < 60000 * 5) {
                         // Trigger notification
                         showNotification(turn);
@@ -55,16 +55,21 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
             });
         };
 
-        const interval = setInterval(checkReminders, 10000); // Check every 10s
+        const interval = setInterval(checkReminders, 2000); // Check every 2s
         return () => clearInterval(interval);
     }, [turns, onReminderSent]);
 
     const showNotification = (turn: Turn) => {
+        const turnDate = new Date(turn.dateTime);
+        const dateStr = turnDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' });
+        const timeStr = turnDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const bodyText = `El turno es el ${dateStr} a las ${timeStr} hs.`;
+
         // 1. Try Service Worker Notification (Best for Android)
         if ('serviceWorker' in navigator && 'Notification' in window) {
             navigator.serviceWorker.ready.then(registration => {
                 registration.showNotification(`Recordatorio: ${turn.clientName}`, {
-                    body: `Es hora del turno de ${turn.clientName}. Toca para abrir WhatsApp.`,
+                    body: bodyText,
                     icon: '/icon.png',
                     vibrate: [200, 100, 200],
                     tag: 'reminder-' + turn.id,
@@ -75,7 +80,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         // 2. Fallback to standard Notification
         else if ('Notification' in window && Notification.permission === 'granted') {
             const notif = new Notification(`Recordatorio: ${turn.clientName}`, {
-                body: `Es hora del turno de ${turn.clientName}.`,
+                body: bodyText,
                 icon: '/icon.png'
             });
             notif.onclick = () => {
