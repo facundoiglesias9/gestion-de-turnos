@@ -31,7 +31,7 @@ export default function AdminPage() {
 
     useEffect(() => {
         if (!loading) {
-            if (!user || user.username !== 'facundoiglesias9') { // Simple check, RLS enforces security anyway
+            if (!user || user.username !== 'facundo') { // Simple check, RLS enforces security anyway
                 router.push('/');
                 return;
             }
@@ -85,8 +85,8 @@ export default function AdminPage() {
                                     key={profile.id}
                                     onClick={() => loadUserTurns(profile.id)}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${selectedUser === profile.id
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
                                         }`}
                                 >
                                     <div className="font-bold">{profile.business_name}</div>
