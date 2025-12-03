@@ -176,8 +176,8 @@ export default function EarningsPage() {
                             <p className="text-slate-400">No hay trabajos completados</p>
                         </div>
                     ) : (
-                        <div className="glass-card overflow-hidden max-h-96 overflow-y-auto">
-                            <table className="w-full">
+                        <div className="glass-card max-h-96 overflow-y-auto overflow-x-auto">
+                            <table className="w-full min-w-[500px]">
                                 <thead className="bg-slate-800/50 border-b border-slate-700 sticky top-0">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Cliente</th>
