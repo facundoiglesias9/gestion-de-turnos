@@ -143,7 +143,7 @@ export default function EarningsPage() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Ganancias y Gastos</h2>
+            <h2 className="text-2xl font-bold text-white">Ganancias y Gastos</h2>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -166,39 +166,40 @@ export default function EarningsPage() {
             {/* Grid with Completed Turns and Expenses */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Completed Turns Section */}
+                {/* Completed Turns Section */}
                 <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">Trabajos Completados</h3>
+                    <h3 className="text-xl font-bold text-white mb-4">Trabajos Completados</h3>
                     {loading ? (
-                        <p className="text-gray-500">Cargando...</p>
+                        <p className="text-slate-400">Cargando...</p>
                     ) : completedTurns.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                            <p className="text-gray-500">No hay trabajos completados</p>
+                        <div className="text-center py-12 glass-card">
+                            <p className="text-slate-400">No hay trabajos completados</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-lg shadow-sm overflow-hidden max-h-96 overflow-y-auto">
+                        <div className="glass-card overflow-hidden max-h-96 overflow-y-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 border-b sticky top-0">
+                                <thead className="bg-slate-800/50 border-b border-slate-700 sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
-                                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Monto</th>
-                                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700"></th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Cliente</th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Fecha</th>
+                                        <th className="px-4 py-3 text-right text-sm font-semibold text-slate-300">Monto</th>
+                                        <th className="px-4 py-3 text-right text-sm font-semibold text-slate-300"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y">
+                                <tbody className="divide-y divide-slate-700">
                                     {completedTurns.map((turn) => (
-                                        <tr key={turn.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-gray-800 font-medium">{turn.client_name}</td>
-                                            <td className="px-4 py-3 text-gray-600 text-sm">
+                                        <tr key={turn.id} className="hover:bg-slate-700/30 transition-colors">
+                                            <td className="px-4 py-3 text-slate-200 font-medium">{turn.client_name}</td>
+                                            <td className="px-4 py-3 text-slate-400 text-sm">
                                                 {new Date(turn.date_time).toLocaleDateString('es-AR')}
                                             </td>
-                                            <td className="px-4 py-3 text-right font-medium text-green-600">
+                                            <td className="px-4 py-3 text-right font-medium text-green-400">
                                                 {formatPrice(turn.estimated_price)}
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <button
                                                     onClick={() => handleDeleteCompletedTurn(turn.id)}
-                                                    className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                                                    className="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-colors"
                                                     title="Eliminar"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -215,9 +216,10 @@ export default function EarningsPage() {
                 </div>
 
                 {/* Expenses Section */}
+                {/* Expenses Section */}
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold text-gray-800">Gastos</h3>
+                        <h3 className="text-xl font-bold text-white">Gastos</h3>
                         <button
                             onClick={() => setShowModal(true)}
                             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
@@ -227,36 +229,36 @@ export default function EarningsPage() {
                     </div>
 
                     {loading ? (
-                        <p className="text-gray-500">Cargando...</p>
+                        <p className="text-slate-400">Cargando...</p>
                     ) : expenses.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                            <p className="text-gray-500">No hay gastos registrados</p>
+                        <div className="text-center py-12 glass-card">
+                            <p className="text-slate-400">No hay gastos registrados</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-lg shadow-sm overflow-hidden max-h-96 overflow-y-auto">
+                        <div className="glass-card overflow-hidden max-h-96 overflow-y-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 border-b sticky top-0">
+                                <thead className="bg-slate-800/50 border-b border-slate-700 sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Descripción</th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
-                                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Monto</th>
-                                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700"></th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Descripción</th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Fecha</th>
+                                        <th className="px-4 py-3 text-right text-sm font-semibold text-slate-300">Monto</th>
+                                        <th className="px-4 py-3 text-right text-sm font-semibold text-slate-300"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y">
+                                <tbody className="divide-y divide-slate-700">
                                     {expenses.map((expense) => (
-                                        <tr key={expense.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-gray-800">{expense.description}</td>
-                                            <td className="px-4 py-3 text-gray-600 text-sm">
+                                        <tr key={expense.id} className="hover:bg-slate-700/30 transition-colors">
+                                            <td className="px-4 py-3 text-slate-200">{expense.description}</td>
+                                            <td className="px-4 py-3 text-slate-400 text-sm">
                                                 {new Date(expense.created_at).toLocaleDateString('es-AR')}
                                             </td>
-                                            <td className="px-4 py-3 text-right font-medium text-gray-900">
+                                            <td className="px-4 py-3 text-right font-medium text-white">
                                                 {formatPrice(expense.amount)}
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <button
                                                     onClick={() => handleDeleteExpense(expense.id)}
-                                                    className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                                                    className="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-colors"
                                                     title="Eliminar"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -275,25 +277,25 @@ export default function EarningsPage() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Agregar Gasto</h3>
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
+                    <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                        <h3 className="text-xl font-bold text-white mb-4">Agregar Gasto</h3>
                         <form onSubmit={handleAddExpense} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-300 mb-1">
                                     Descripción
                                 </label>
                                 <input
                                     type="text"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-white"
                                     placeholder="Ej: Compra de materiales"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-300 mb-1">
                                     Monto
                                 </label>
                                 <input
@@ -302,7 +304,7 @@ export default function EarningsPage() {
                                     min="0"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-white"
                                     placeholder="0.00"
                                     required
                                 />
@@ -311,13 +313,13 @@ export default function EarningsPage() {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                    className="flex-1 px-4 py-2 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors font-bold"
                                 >
                                     Agregar
                                 </button>
