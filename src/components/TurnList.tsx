@@ -293,7 +293,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                             type="number"
                                             value={editPrice}
                                             onChange={(e) => setEditPrice(e.target.value)}
-                                            className="w-32 px-3 py-1 text-base bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
+                                            className="w-40 px-3 py-1 text-base bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
                                             autoFocus
                                         />
                                     ) : (
@@ -350,7 +350,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                             type="number"
                                             value={editDepositValue}
                                             onChange={(e) => setEditDepositValue(e.target.value)}
-                                            className="w-24 px-2 py-1 text-sm bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
+                                            className="w-32 px-2 py-1 text-sm bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
                                             autoFocus
                                             placeholder="Monto"
                                         />
