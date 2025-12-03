@@ -10,6 +10,7 @@ export interface Turn {
     task?: string;
     completed?: boolean | null;
     estimatedPrice?: number;
+    deposit?: number;
     paid?: boolean;
     reminderTime?: string | null;
     reminderSent?: boolean;
@@ -21,13 +22,17 @@ interface TurnListProps {
     onStatusChange: (id: string, status: boolean) => void;
     onPaidChange?: (id: string, paid: boolean) => void;
     onUpdatePrice?: (id: string, newPrice: number) => void;
+    onUpdateDeposit?: (id: string, newDeposit: number) => void;
     onSetReminder?: (id: string, date: string | null) => void;
     onReminderSent?: (id: string) => void;
 }
 
-export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange, onUpdatePrice, onSetReminder, onReminderSent }: TurnListProps) {
+export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange, onUpdatePrice, onUpdateDeposit, onSetReminder, onReminderSent }: TurnListProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editPrice, setEditPrice] = useState<string>('');
+
+    const [editingDepositId, setEditingDepositId] = useState<string | null>(null);
+    const [editDepositValue, setEditDepositValue] = useState<string>('');
 
     // Reminder Modal State
     const [reminderModalOpen, setReminderModalOpen] = useState<string | null>(null);
@@ -120,6 +125,23 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
         if (onUpdatePrice && editPrice) {
             onUpdatePrice(id, parseFloat(editPrice));
             setEditingId(null);
+        }
+    };
+
+    const startEditingDeposit = (turn: Turn) => {
+        setEditingDepositId(turn.id);
+        setEditDepositValue(turn.deposit?.toString() || '');
+    };
+
+    const cancelEditingDeposit = () => {
+        setEditingDepositId(null);
+        setEditDepositValue('');
+    };
+
+    const saveDeposit = (id: string) => {
+        if (onUpdateDeposit && editDepositValue) {
+            onUpdateDeposit(id, parseFloat(editDepositValue));
+            setEditingDepositId(null);
         }
     };
 
@@ -233,8 +255,8 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                                     <button
                                         onClick={() => openReminderModal(turn)}
                                         className={`p-2 rounded-full transition-colors ${turn.reminderTime
-                                                ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
-                                                : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
+                                            ? 'text-yellow-400 bg-yellow-900/20 hover:bg-yellow-900/40'
+                                            : 'text-slate-400 hover:text-yellow-400 hover:bg-slate-700'
                                             }`}
                                         title={turn.reminderTime ? `Recordatorio: ${new Date(turn.reminderTime).toLocaleString()}` : "Crear recordatorio"}
                                     >
@@ -261,58 +283,138 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                             </div>
                         )}
 
-                        <div className="mb-4 bg-purple-900/30 p-3 rounded-xl text-base flex items-center justify-between border border-purple-500/30">
-                            <div className="flex items-center gap-3">
-                                <span className="font-bold text-purple-300">Precio estimado:</span>
-                                {editingId === turn.id ? (
-                                    <input
-                                        type="number"
-                                        value={editPrice}
-                                        onChange={(e) => setEditPrice(e.target.value)}
-                                        className="w-32 px-3 py-1 text-base bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <span className="text-white font-bold text-lg">
-                                        {turn.estimatedPrice !== undefined ? formatPrice(turn.estimatedPrice) : '-'}
-                                    </span>
+                        <div className="mb-4 bg-purple-900/30 p-3 rounded-xl text-base flex flex-col gap-2 border border-purple-500/30">
+                            {/* Price Row */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold text-purple-300">Precio estimado:</span>
+                                    {editingId === turn.id ? (
+                                        <input
+                                            type="number"
+                                            value={editPrice}
+                                            onChange={(e) => setEditPrice(e.target.value)}
+                                            className="w-32 px-3 py-1 text-base bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span className="text-white font-bold text-lg">
+                                            {turn.estimatedPrice !== undefined ? formatPrice(turn.estimatedPrice) : '-'}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {onUpdatePrice && (
+                                    <div>
+                                        {editingId === turn.id ? (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => savePrice(turn.id)}
+                                                    className="p-2 text-green-400 hover:bg-green-900/30 rounded-lg transition-colors"
+                                                    title="Guardar"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={cancelEditing}
+                                                    className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
+                                                    title="Cancelar"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => startEditing(turn)}
+                                                className="p-2 text-purple-300 hover:text-white hover:bg-purple-600/30 rounded-lg transition-colors"
+                                                title="Editar precio"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 
-                            {onUpdatePrice && (
-                                <div>
-                                    {editingId === turn.id ? (
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => savePrice(turn.id)}
-                                                className="p-2 text-green-400 hover:bg-green-900/30 rounded-lg transition-colors"
-                                                title="Guardar"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                onClick={cancelEditing}
-                                                className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
-                                                title="Cancelar"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
+                            {/* Deposit Row */}
+                            <div className="flex items-center justify-between border-t border-purple-500/20 pt-2 mt-1">
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold text-purple-300 text-sm">Seña:</span>
+                                    {editingDepositId === turn.id ? (
+                                        <input
+                                            type="number"
+                                            value={editDepositValue}
+                                            onChange={(e) => setEditDepositValue(e.target.value)}
+                                            className="w-24 px-2 py-1 text-sm bg-slate-900 border border-purple-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
+                                            autoFocus
+                                            placeholder="Monto"
+                                        />
                                     ) : (
-                                        <button
-                                            onClick={() => startEditing(turn)}
-                                            className="p-2 text-purple-300 hover:text-white hover:bg-purple-600/30 rounded-lg transition-colors"
-                                            title="Editar precio"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                            </svg>
-                                        </button>
+                                        <span className="text-white font-medium">
+                                            {turn.deposit ? formatPrice(turn.deposit) : '$0.00'}
+                                        </span>
                                     )}
+                                </div>
+
+                                {onUpdateDeposit && (
+                                    <div>
+                                        {editingDepositId === turn.id ? (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => saveDeposit(turn.id)}
+                                                    className="p-1 text-green-400 hover:bg-green-900/30 rounded-lg transition-colors"
+                                                    title="Guardar seña"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={cancelEditingDeposit}
+                                                    className="p-1 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
+                                                    title="Cancelar"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            (!turn.deposit || turn.deposit === 0) ? (
+                                                <button
+                                                    onClick={() => startEditingDeposit(turn)}
+                                                    className="px-3 py-1 text-xs font-bold bg-purple-600 text-white rounded-full hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/20"
+                                                >
+                                                    ¿Pagó seña?
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => startEditingDeposit(turn)}
+                                                    className="p-1 text-purple-300 hover:text-white hover:bg-purple-600/30 rounded-lg transition-colors"
+                                                    title="Editar seña"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                                    </svg>
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Remaining Balance */}
+                            {(turn.estimatedPrice || 0) > 0 && (
+                                <div className="flex items-center justify-between border-t border-purple-500/20 pt-2 mt-1">
+                                    <span className="font-bold text-slate-400 text-sm">Falta pagar:</span>
+                                    <span className={`font-bold text-lg ${(turn.estimatedPrice || 0) - (turn.deposit || 0) <= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {formatPrice(Math.max(0, (turn.estimatedPrice || 0) - (turn.deposit || 0)))}
+                                    </span>
                                 </div>
                             )}
                         </div>

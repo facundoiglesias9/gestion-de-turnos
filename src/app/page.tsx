@@ -44,6 +44,7 @@ export default function Home() {
           task: turn.task,
           completed: turn.completed,
           estimatedPrice: turn.estimated_price,
+          deposit: turn.deposit,
           paid: turn.paid,
           reminderTime: turn.reminder_time,
           reminderSent: turn.reminder_sent
@@ -97,6 +98,7 @@ export default function Home() {
         task: newTurn.task,
         completed: newTurn.completed,
         estimatedPrice: newTurn.estimated_price,
+        deposit: 0,
         reminderTime: null,
         reminderSent: false
       }]);
@@ -161,6 +163,22 @@ export default function Home() {
     } else {
       setTurns(turns.map(turn =>
         turn.id === id ? { ...turn, estimatedPrice: newPrice } : turn
+      ));
+    }
+  };
+
+  const handleUpdateDeposit = async (id: string, newDeposit: number) => {
+    const { error } = await supabase
+      .from('turns')
+      .update({ deposit: newDeposit })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating deposit:', error);
+      alert('Error al actualizar la seña');
+    } else {
+      setTurns(turns.map(turn =>
+        turn.id === id ? { ...turn, deposit: newDeposit } : turn
       ));
     }
   };
@@ -287,6 +305,7 @@ export default function Home() {
                     onStatusChange={handleStatusChange}
                     onPaidChange={handlePaidChange}
                     onUpdatePrice={handleUpdatePrice}
+                    onUpdateDeposit={handleUpdateDeposit}
                     onSetReminder={handleSetReminder}
                     onReminderSent={handleReminderSent}
                   />
