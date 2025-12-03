@@ -285,7 +285,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
 
                         <div className="mb-4 bg-purple-900/30 p-3 rounded-xl text-base flex flex-col gap-2 border border-purple-500/30">
                             {/* Price Row */}
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-3">
                                     <span className="font-bold text-purple-300">Precio estimado:</span>
                                     {editingId === turn.id ? (
@@ -342,7 +342,7 @@ export default function TurnList({ turns, onDelete, onStatusChange, onPaidChange
                             </div>
 
                             {/* Deposit Row */}
-                            <div className="flex items-center justify-between border-t border-purple-500/20 pt-2 mt-1">
+                            <div className="flex flex-wrap items-center justify-between border-t border-purple-500/20 pt-2 mt-1 gap-2">
                                 <div className="flex items-center gap-3">
                                     <span className="font-bold text-purple-300 text-sm">Seña:</span>
                                     {editingDepositId === turn.id ? (
