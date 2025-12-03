@@ -259,7 +259,7 @@ export default function Home() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex gap-2 border-b border-slate-700 mb-6">
+          <div className="flex gap-2 border-b border-slate-700 mb-6 overflow-x-auto whitespace-nowrap pb-1">
             <button
               onClick={() => setActivePage('turnos')}
               className={`px-6 py-3 font-medium transition-all ${activePage === 'turnos'
