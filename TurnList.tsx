@@ -395,7 +395,7 @@ export default function TurnList({
                             <div>
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs text-slate-500 font-bold uppercase block">Tarea</span>
-                                    {onUpdateTask && editingTaskId !== turn.id && (
+                                    {(onUpdateTask || onUpdateTurnData) && editingTaskId !== turn.id && (
                                         <button
                                             onClick={() => startEditingTask(turn)}
                                             className="text-slate-500 hover:text-purple-400 p-0.5 rounded transition-colors"
