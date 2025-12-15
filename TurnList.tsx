@@ -400,7 +400,7 @@ export default function TurnList({
                                             onClick={() => startEditingTask(turn)}
                                             className="text-[10px] bg-purple-500/10 text-purple-300 hover:bg-purple-500 hover:text-white px-2 py-0.5 rounded transition-all border border-purple-500/20 font-bold uppercase tracking-wider"
                                         >
-                                            Editar
+                                            Editar Tareas
                                         </button>
                                     )}
                                 </div>
