@@ -370,8 +370,7 @@ export default function MainPage() {
             <div className="animate-fade-in">
 
 
-                // --- Render ---
-                // ...
+
 
                 {currentView === 'next_turns' && (
                     <TurnList
