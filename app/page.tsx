@@ -231,6 +231,11 @@ export default function MainPage() {
         loadTurns();
     };
 
+    const handleUpdateTask = async (id: string, task: string) => {
+        await supabase.from('turns').update({ task }).eq('id', id);
+        loadTurns();
+    };
+
     const handleEditTurnClick = (turn: Turn) => {
         setIsEditingTurn(true);
         setEditingTurnId(turn.id);
@@ -366,6 +371,7 @@ export default function MainPage() {
                         onUpdatePrice={handleUpdatePrice}
                         onUpdateDeposit={handleUpdateDeposit}
                         onSetReminder={handleSetReminder}
+                        onUpdateTask={handleUpdateTask}
                     />
                 )}
 

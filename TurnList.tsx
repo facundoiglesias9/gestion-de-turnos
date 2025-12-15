@@ -27,6 +27,7 @@ interface TurnListProps {
     onReminderSent?: (id: string) => void;
     onEditTurn?: (turn: Turn) => void;
     onReschedule?: (id: string, newDate: string) => void;
+    onUpdateTask?: (id: string, task: string) => void;
 }
 
 export default function TurnList({
@@ -39,13 +40,18 @@ export default function TurnList({
     onSetReminder,
     onReminderSent,
     onEditTurn,
-    onReschedule
+    onReschedule,
+    onUpdateTask
 }: TurnListProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editPrice, setEditPrice] = useState<string>('');
 
     const [editingDepositId, setEditingDepositId] = useState<string | null>(null);
     const [editDepositValue, setEditDepositValue] = useState<string>('');
+
+    // Task Edit State
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+    const [editTaskValue, setEditTaskValue] = useState<string>('');
 
     // Reminder Modal State
     const [reminderModalOpen, setReminderModalOpen] = useState<string | null>(null);
@@ -56,6 +62,25 @@ export default function TurnList({
     const [rescheduleModalOpen, setRescheduleModalOpen] = useState<string | null>(null);
     const [rescheduleDate, setRescheduleDate] = useState('');
     const [rescheduleTime, setRescheduleTime] = useState('');
+
+    // ... (rest of the state)
+
+    const startEditingTask = (turn: Turn) => {
+        setEditingTaskId(turn.id);
+        setEditTaskValue(turn.task || '');
+    };
+
+    const cancelEditingTask = () => {
+        setEditingTaskId(null);
+        setEditTaskValue('');
+    };
+
+    const saveTask = (id: string) => {
+        if (onUpdateTask) {
+            onUpdateTask(id, editTaskValue);
+            setEditingTaskId(null);
+        }
+    };
 
     // In-App Notification State
     const [activeNotification, setActiveNotification] = useState<Turn | null>(null);
@@ -326,18 +351,46 @@ export default function TurnList({
                         {/* Info Grid: Tarea and Money */}
                         <div className="grid grid-cols-[1.2fr_1fr] gap-4 mb-4">
                             <div>
-                                <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Tarea</span>
-                                {turn.task ? (
-                                    <ul className="text-slate-200 font-medium text-sm space-y-1.5">
-                                        {turn.task.split('+').map((t, i) => (
-                                            <li key={i} className="flex items-start gap-2 leading-tight">
-                                                <span className="text-purple-400 mt-[3px] text-[10px]">●</span>
-                                                <span className="break-words">{t.trim()}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs text-slate-500 font-bold uppercase block">Tarea</span>
+                                    {onUpdateTask && editingTaskId !== turn.id && (
+                                        <button
+                                            onClick={() => startEditingTask(turn)}
+                                            className="text-slate-500 hover:text-purple-400 p-0.5 rounded transition-colors"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                                        </button>
+                                    )}
+                                </div>
+
+                                {editingTaskId === turn.id ? (
+                                    <div className="flex flex-col gap-2">
+                                        <textarea
+                                            value={editTaskValue}
+                                            onChange={(e) => setEditTaskValue(e.target.value)}
+                                            className="w-full bg-slate-900 border border-purple-500 rounded p-2 text-white text-sm outline-none resize-none"
+                                            rows={2}
+                                            autoFocus
+                                            placeholder="Detalle de tareas..."
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={cancelEditingTask} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">Cancelar</button>
+                                            <button onClick={() => saveTask(turn.id)} className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-2 py-1 rounded font-bold">Guardar</button>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <p className="text-slate-200 font-medium leading-tight text-sm">Sin detalle</p>
+                                    turn.task ? (
+                                        <ul className="text-slate-200 font-medium text-sm space-y-1.5">
+                                            {turn.task.split('+').map((t, i) => (
+                                                <li key={i} className="flex items-start gap-2 leading-tight">
+                                                    <span className="text-purple-400 mt-[3px] text-[10px]">●</span>
+                                                    <span className="break-words">{t.trim()}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-slate-200 font-medium leading-tight text-sm">Sin detalle</p>
+                                    )
                                 )}
                             </div>
 
