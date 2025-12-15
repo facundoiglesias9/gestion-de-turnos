@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../AuthContext';
-import { supabase } from '../supabase';
-import Login from '../Login';
-import TurnList, { Turn } from '../TurnList';
-import TurnForm from '../TurnForm';
+import { useAuth } from '@/components/AuthContext';
+import { supabase } from '@/lib/supabase';
+import Login from '@/components/Login';
+import TurnList, { Turn } from '@/components/TurnList';
+import TurnForm from '@/components/TurnForm';
 
 // Interfaces
 interface Price {

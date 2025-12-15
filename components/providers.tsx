@@ -4,7 +4,7 @@ import { AuthProvider } from "./AuthContext";
 import { useEffect } from "react";
 import { App } from '@capacitor/app';
 
-import { supabase } from "./supabase";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { Capacitor } from '@capacitor/core';
 

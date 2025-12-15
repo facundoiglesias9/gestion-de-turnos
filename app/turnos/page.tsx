@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabase';
-import { useAuth } from '../../AuthContext';
-import TurnList, { Turn } from '../../TurnList';
-import TurnForm from '../../TurnForm';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/AuthContext';
+import TurnList, { Turn } from '@/components/TurnList';
+import TurnForm from '@/components/TurnForm';
 import Link from 'next/link';
 
 export default function TurnosPage() {

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { Providers } from "../providers";
-import ServiceWorkerRegister from "../ServiceWorkerRegister";
+import { Providers } from "@/components/providers";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({ subsets: ["latin"] });
 const outfit = Outfit({ subsets: ["latin"], variable: '--font-outfit' });

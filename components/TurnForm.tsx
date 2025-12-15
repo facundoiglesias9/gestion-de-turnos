@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase';
 
 interface TurnData {
     clientName: string;
