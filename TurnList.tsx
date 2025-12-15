@@ -327,9 +327,18 @@ export default function TurnList({
                         <div className="grid grid-cols-[1.2fr_1fr] gap-4 mb-4">
                             <div>
                                 <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Tarea</span>
-                                <p className="text-slate-200 font-medium leading-tight truncate">
-                                    {turn.task || "Sin detalle"}
-                                </p>
+                                {turn.task ? (
+                                    <ul className="text-slate-200 font-medium text-sm space-y-1.5">
+                                        {turn.task.split('+').map((t, i) => (
+                                            <li key={i} className="flex items-start gap-2 leading-tight">
+                                                <span className="text-purple-400 mt-[3px] text-[10px]">●</span>
+                                                <span className="break-words">{t.trim()}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-slate-200 font-medium leading-tight text-sm">Sin detalle</p>
+                                )}
                             </div>
 
                             {/* Money Section (Right Side) */}
