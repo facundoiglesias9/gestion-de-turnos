@@ -11,13 +11,19 @@ export const metadata: Metadata = {
   title: "Gestión de Turnos",
   description: "Sistema de gestión de turnos",
   manifest: "/manifest.json",
-  themeColor: "#0f172a",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Gestión de Turnos",
   },
+};
+
+export const viewport = {
+  themeColor: "#0f172a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // user-scalable=0 maps to false
 };
 
 export default function RootLayout({
