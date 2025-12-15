@@ -36,7 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         businessName: data.session.user.user_metadata.business_name || 'Mi Negocio'
                     });
                 }
-            } catch (error) {
+            } catch (error: any) {
+                // Ignore invalid refresh token errors, just means user is not logged in / session expired
+                if (error?.message?.includes('Invalid Refresh Token') || error?.message?.includes('Refresh Token Not Found')) {
+                    console.warn("Session expired or invalid, user needs to login.");
+                    return;
+                }
                 console.error("Error checking session:", error);
             } finally {
                 setLoading(false);

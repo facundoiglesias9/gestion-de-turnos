@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Gestión de Turnos",
   },
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 export const viewport = {
