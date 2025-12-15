@@ -28,10 +28,14 @@ interface TurnListProps {
     onEditTurn?: (turn: Turn) => void;
     onReschedule?: (id: string, newDate: string) => void;
     onUpdateTask?: (id: string, task: string) => void;
+    // New Props for Price-Aware Editing
+    prices?: { id: string, service_name: string, price: number }[];
+    onUpdateTurnData?: (id: string, data: { task: string, price: number }) => void;
 }
 
 export default function TurnList({
     turns,
+    prices = [],
     onDelete,
     onStatusChange,
     onPaidChange,
@@ -41,7 +45,8 @@ export default function TurnList({
     onReminderSent,
     onEditTurn,
     onReschedule,
-    onUpdateTask
+    onUpdateTask,
+    onUpdateTurnData
 }: TurnListProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editPrice, setEditPrice] = useState<string>('');
@@ -52,6 +57,7 @@ export default function TurnList({
     // Task Edit State
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
     const [editTaskValue, setEditTaskValue] = useState<string>('');
+    const [editTaskPrice, setEditTaskPrice] = useState<number>(0);
 
     // Reminder Modal State
     const [reminderModalOpen, setReminderModalOpen] = useState<string | null>(null);
@@ -68,17 +74,53 @@ export default function TurnList({
     const startEditingTask = (turn: Turn) => {
         setEditingTaskId(turn.id);
         setEditTaskValue(turn.task || '');
+        setEditTaskPrice(turn.estimatedPrice || 0);
     };
 
     const cancelEditingTask = () => {
         setEditingTaskId(null);
         setEditTaskValue('');
+        setEditTaskPrice(0);
     };
 
     const saveTask = (id: string) => {
-        if (onUpdateTask) {
+        if (onUpdateTurnData) {
+            onUpdateTurnData(id, { task: editTaskValue, price: editTaskPrice });
+            setEditingTaskId(null);
+        } else if (onUpdateTask) {
+            // Fallback
             onUpdateTask(id, editTaskValue);
             setEditingTaskId(null);
+        }
+    };
+
+    // Helper to add a service
+    const addServiceToTask = (serviceName: string, servicePrice: number) => {
+        const currentTasks = editTaskValue ? editTaskValue.split('+').map(t => t.trim()) : [];
+        if (!currentTasks.includes(serviceName)) {
+            const newTasks = [...currentTasks, serviceName].join(' + ');
+            setEditTaskValue(prefixPlus(newTasks));
+            setEditTaskPrice(prev => prev + servicePrice);
+        }
+    };
+
+    // Helper to ensure proper formatting
+    const prefixPlus = (str: string) => {
+        // Just return as is, the turn list rendering handles the + splitting or adding bullets
+        // But the previous implementation split by +, so we just join by +
+        return str;
+    };
+
+    // Helper to remove a service
+    const removeServiceFromTask = (serviceName: string) => {
+        const currentTasks = editTaskValue ? editTaskValue.split('+').map(t => t.trim()) : [];
+        const newTasks = currentTasks.filter(t => t !== serviceName);
+        setEditTaskValue(newTasks.join(' + '));
+
+        // Find price to subtract (approximate if not exact match in prices list, but fine for now)
+        const priceObj = prices?.find(p => p.service_name === serviceName);
+        if (priceObj) {
+            setEditTaskPrice(prev => Math.max(0, prev - priceObj.price));
         }
     };
 
@@ -364,18 +406,46 @@ export default function TurnList({
                                 </div>
 
                                 {editingTaskId === turn.id ? (
-                                    <div className="flex flex-col gap-2">
-                                        <textarea
-                                            value={editTaskValue}
-                                            onChange={(e) => setEditTaskValue(e.target.value)}
-                                            className="w-full bg-slate-900 border border-purple-500 rounded p-2 text-white text-sm outline-none resize-none"
-                                            rows={2}
-                                            autoFocus
-                                            placeholder="Detalle de tareas..."
-                                        />
-                                        <div className="flex justify-end gap-2">
-                                            <button onClick={cancelEditingTask} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">Cancelar</button>
-                                            <button onClick={() => saveTask(turn.id)} className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-2 py-1 rounded font-bold">Guardar</button>
+                                    <div className="flex flex-col gap-3 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+
+                                        {/* Dropdown for adding services */}
+                                        <select
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-sm outline-none"
+                                            onChange={(e) => {
+                                                const selected = prices?.find(p => p.id === e.target.value);
+                                                if (selected) {
+                                                    addServiceToTask(selected.service_name, selected.price);
+                                                    e.target.value = ""; // Reset dropdown
+                                                }
+                                            }}
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>+ Agregar servicio...</option>
+                                            {prices?.map(p => (
+                                                <option key={p.id} value={p.id}>{p.service_name} (${p.price})</option>
+                                            ))}
+                                        </select>
+
+                                        {/* Selected Chips */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {editTaskValue.split('+').filter(t => t.trim()).map((t, i) => (
+                                                <div key={i} className="flex items-center gap-1 bg-purple-900/40 text-purple-200 px-2 py-1 rounded text-xs border border-purple-500/30">
+                                                    <span>{t.trim()}</span>
+                                                    <button onClick={() => removeServiceFromTask(t.trim())} className="text-purple-400 hover:text-white">×</button>
+                                                </div>
+                                            ))}
+                                            {!editTaskValue && <span className="text-slate-500 text-xs italic">Sin tareas seleccionadas</span>}
+                                        </div>
+
+                                        {/* Price Preview */}
+                                        <div className="flex justify-between items-center border-t border-slate-700/50 pt-2">
+                                            <span className="text-xs text-slate-400">Nuevo Total:</span>
+                                            <span className="font-bold text-green-400">${editTaskPrice.toLocaleString('es-AR')}</span>
+                                        </div>
+
+                                        <div className="flex justify-end gap-2 mt-1">
+                                            <button onClick={cancelEditingTask} className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition-colors">Cancelar</button>
+                                            <button onClick={() => saveTask(turn.id)} className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg font-bold transition-colors">Guardar</button>
                                         </div>
                                     </div>
                                 ) : (

@@ -236,6 +236,14 @@ export default function MainPage() {
         loadTurns();
     };
 
+    const handleUpdateTurnData = async (id: string, updates: { task: string, price: number }) => {
+        await supabase.from('turns').update({
+            task: updates.task,
+            estimated_price: updates.price
+        }).eq('id', id);
+        loadTurns();
+    };
+
     const handleEditTurnClick = (turn: Turn) => {
         setIsEditingTurn(true);
         setEditingTurnId(turn.id);
@@ -360,9 +368,15 @@ export default function MainPage() {
 
             {/* Content */}
             <div className="animate-fade-in">
+
+
+                // --- Render ---
+                // ...
+
                 {currentView === 'next_turns' && (
                     <TurnList
                         turns={turns.filter(t => !t.paid)}
+                        prices={prices} // Pass prices list
                         onDelete={handleDeleteTurn}
                         onStatusChange={handleStatusChange}
                         onEditTurn={handleEditTurnClick}
@@ -371,7 +385,7 @@ export default function MainPage() {
                         onUpdatePrice={handleUpdatePrice}
                         onUpdateDeposit={handleUpdateDeposit}
                         onSetReminder={handleSetReminder}
-                        onUpdateTask={handleUpdateTask}
+                        onUpdateTurnData={handleUpdateTurnData}
                     />
                 )}
 
